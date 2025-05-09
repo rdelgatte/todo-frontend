@@ -1,57 +1,77 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { TodoItem } from "../model/TodoItem.type";
 
-const API_URL = 'http://localhost:3000/items';
-const QUERY_KEY = 'items'
-
-export type TodoItem = {
-  todoItemIdentifier: number;
-  todoItemTitle: string;
-  todoItemDescription?: string;
-  todoItemCompleted: boolean;
-};
+const API_URL = "http://localhost:3000/items";
+const QUERY_KEY = "items";
 
 export const useTodoItems = () => {
   const queryClient = useQueryClient();
 
   const { data: todoItems = [], ...query } = useQuery<TodoItem[]>({
     queryKey: [QUERY_KEY],
-    queryFn: async () => {
+    queryFn: async (): Promise<TodoItem[]> => {
       const response = await fetch(`${API_URL}`);
-      if (!response.ok){
-        throw new Error('Network error')
+      if (!response.ok) {
+        throw new Error("Network error");
       }
-      return response.json();
-    }, 
-    retry: 1
+      return response.json() as Promise<TodoItem[]>;
+    },
   });
 
   const addTodoItem = useMutation({
-    mutationFn: async (newTodo: Omit<TodoItem, 'id'>) => {
-      const response = await fetch(API_URL,{
+    mutationFn: async ({
+      title,
+      description,
+    }: {
+      title: string;
+      description?: string;
+    }) => {
+      await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({ todoItemTitle: newTodo.todoItemTitle, todoItemDescription: newTodo.todoItemDescription})
+        body: JSON.stringify({ title, description }),
       });
-      if (!response.ok){
-        throw new Error('Network error')
-      }
-      return response.json();
-
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 
   const updateTodoItemCompletion = useMutation({
     mutationFn: async (todo: TodoItem) => {
-      await fetch(`${API_URL}/${todo.todoItemIdentifier}/complete`, {method: 'PATCH', body: JSON.stringify(todo.todoItemCompleted)});
-      return todo;
+      await fetch(`${API_URL}/${todo.todoItemIdentifier}/complete`, {
+        method: "PATCH",
+        body: JSON.stringify(todo.todoItemCompleted),
+      });
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] })
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+
+  const deleteTodoItem = useMutation({
+    mutationFn: async (id: number) => {
+      await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
+  });
+
+  const updateTodoItem = useMutation({
+    mutationFn: async (todoItem: TodoItem) => {
+      await fetch(`${API_URL}/${todoItem.todoItemIdentifier}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          title: todoItem.todoItemTitle,
+          description: todoItem.todoItemDescription,
+        }),
+      });
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 
   return {
     todoItems,
     ...query,
-    addTodo: addTodoItem,
+    addTodoItem,
     updateTodoItemCompletion,
+    deleteTodoItem,
+    updateTodoItem,
   };
 };
