@@ -1,6 +1,6 @@
 export type TodoItem = {
-  todoItemIdentifier: number;
-  todoItemTitle: string;
-  todoItemDescription?: string;
-  todoItemCompleted: boolean;
+  identifier: number;
+  title: string;
+  description?: string;
+  completed: boolean;
 };
