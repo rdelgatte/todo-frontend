@@ -36,9 +36,9 @@ export const useTodoItems = () => {
 
   const updateTodoItemCompletion = useMutation({
     mutationFn: async (todo: TodoItem) => {
-      await fetch(`${API_URL}/${todo.todoItemIdentifier}/complete`, {
+      await fetch(`${API_URL}/${todo.identifier}/complete`, {
         method: "PATCH",
-        body: JSON.stringify(todo.todoItemCompleted),
+        body: JSON.stringify(todo.completed),
       });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
@@ -55,11 +55,11 @@ export const useTodoItems = () => {
 
   const updateTodoItem = useMutation({
     mutationFn: async (todoItem: TodoItem) => {
-      await fetch(`${API_URL}/${todoItem.todoItemIdentifier}`, {
+      await fetch(`${API_URL}/${todoItem.identifier}`, {
         method: "PATCH",
         body: JSON.stringify({
-          title: todoItem.todoItemTitle,
-          description: todoItem.todoItemDescription,
+          title: todoItem.title,
+          description: todoItem.description,
         }),
       });
     },

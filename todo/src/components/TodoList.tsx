@@ -20,7 +20,7 @@ export default function TodoList() {
   useEffect(() => {
     const initialEditedItems = todoItems.reduce(
       (acc, item) => {
-        acc[item.todoItemIdentifier] = item;
+        acc[item.identifier] = item;
         return acc;
       },
       {} as { [key: number]: TodoItem },
@@ -43,11 +43,11 @@ export default function TodoList() {
   };
 
   const toggleCompletion = (id: number) => {
-    const item = todoItems.find((item) => item.todoItemIdentifier === id);
+    const item = todoItems.find((item) => item.identifier === id);
     if (!item) return;
     const updatedItem: TodoItem = {
       ...item,
-      todoItemCompleted: !item.todoItemCompleted,
+      completed: !item.completed,
     };
     updateTodoItemCompletion.mutate(updatedItem);
   };
@@ -59,7 +59,7 @@ export default function TodoList() {
   const handleSave = (id: number) => {
     const item = editedItems[id];
     if (!item) return;
-    updateTodoItem.mutate({ ...item, todoItemIdentifier: id });
+    updateTodoItem.mutate({ ...item, identifier: id });
   };
 
   if (isLoading) return <p>Loading...</p>;
@@ -92,11 +92,11 @@ export default function TodoList() {
 
         <tbody>
           {Object.values(editedItems)
-            .filter((item) => (showCompleted ? true : !item.todoItemCompleted))
-            .sort((a, b) => b.todoItemIdentifier - a.todoItemIdentifier)
+            .filter((item) => (showCompleted ? true : !item.completed))
+            .sort((a, b) => b.identifier - a.identifier)
             .map((item: TodoItem) => (
               <EditTodoItem
-                key={item.todoItemIdentifier}
+                key={item.identifier}
                 todoItem={item}
                 handleEdit={handleEdit}
                 toggleCompletion={toggleCompletion}
